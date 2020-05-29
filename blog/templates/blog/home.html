@@ -1,4 +1,4 @@
-{% extends 'blog/base.html' %}
+{% extends 'base.html' %}
 
 {% block head %}
 Home | RadzBlog
@@ -6,6 +6,36 @@ Home | RadzBlog
 
 {% block body %}
 <div class="container mt-4 text-center">
-    <h1>Test setup</h1>
+    {% if page.has_previous %}
+    <a class="btn btn-sm btn-outline-info text-white"
+        href="?page={{page.previous_page_number}}">Previous</a>
+    {% else %}
+    <a class="btn btn-sm btn-outline-info text-white disabled" href="#">Previous</a>
+    {% endif %}
+
+    <span class="current text-white mx-4">
+        Page {{ page.number }} of {{ page.paginator.num_pages }}
+    </span>
+
+    {% if page.has_next %}
+    <a class="btn btn-sm btn-outline-info text-white" href="?page={{page.next_page_number}}">Next</a>
+    {% else %}
+    <a class="btn btn-sm btn-outline-info text-white disabled" href="#">Next</a>
+    {% endif %}
 </div>
+
+{% for blog in page.object_list %}
+<div class="container mt-5 py-4" style="background-color: bisque; max-width: 50rem;">
+    <h3 class="pl-3">{{blog.title}}</h3>
+    <em class="pl-3">Written By: </em><a
+            href="">{{blog.author.username}}</a>
+    <br>
+    <em class="pl-3">Posted On: </em>{{blog.posted_on}}
+    
+    <div class="px-3 mt-3">
+        {{blog.content}}
+        <a class="float-right" href="">Read More...</a>
+    </div>
+</div>
+{% endfor %}
 {% endblock body %}

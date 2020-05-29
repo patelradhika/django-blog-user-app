@@ -18,9 +18,10 @@
     </title>
 </head>
 
-<body style="background-image: url('https://venngage-wordpress.s3.amazonaws.com/uploads/2018/09/Natural-Wood-Panels-Simple-Background-Image.jpeg');">
+<body
+    style="background-image: url('https://venngage-wordpress.s3.amazonaws.com/uploads/2018/09/Natural-Wood-Panels-Simple-Background-Image.jpeg');">
     <nav class="navbar justify-content-center">
-        <a class="navbar-brand text-white" href="">RadzBlog</a>
+        <a class="navbar-brand text-white" href="{% url 'home' %}">RadzBlog</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -30,10 +31,10 @@
     <div class="container pt-2 navbar-collapse" id="navbarSupportedContent">
         <ul class="nav nav-tabs nav-fill">
             <li class="nav-item">
-                <a class="nav-link text-white" href="">Home</a>
+                <a class="nav-link text-white" href="{% url 'home' %}">Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="">About Us</a>
+                <a class="nav-link text-white" href="{% url 'about' %}">About Us</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-white" href="">Log In</a>
