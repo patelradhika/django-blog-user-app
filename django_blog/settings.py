@@ -25,19 +25,24 @@ SECRET_KEY = 'npb@mq5-n*vozj=(=dr92-*!38$z2g+=(lgks-x7p&-5+mkdnf'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
 ALLOWED_HOSTS = []
+
+LOGIN_REDIRECT_URL = 'home'
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'blog',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'blog',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [

@@ -7,10 +7,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css"
         integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
 
     <title>
         {% block head %}
@@ -36,12 +39,15 @@
             <li class="nav-item">
                 <a class="nav-link text-white" href="{% url 'about' %}">About Us</a>
             </li>
+            
+            {% if not user.is_authenticated %}
             <li class="nav-item">
-                <a class="nav-link text-white" href="">Log In</a>
+                <a class="nav-link text-white" href="{% url 'login' %}">Log In</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="">Register</a>
+                <a class="nav-link text-white" href="{% url 'register' %}">Register</a>
             </li>
+            {% else %}
             <li class="nav-item">
                 <a class="nav-link text-white" href="">Create Blog</a>
             </li>
@@ -52,10 +58,24 @@
                 <a class="nav-link text-white" href="">Account</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="">Log Out</a>
+                <a class="nav-link text-white" href="{% url 'logout' %}">Log Out</a>
             </li>
+            {% endif %}
         </ul>
     </div>
+
+    {% if messages %}
+    <div class="container pt-4">
+        {% for message in messages %}
+        <div class="alert alert-{{message.tags}}" role="alert">
+            {{message}}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <div class="container my-5" style="max-width: 50rem;">
         {% block body %}

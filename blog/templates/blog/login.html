@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block head %}
+Register | RadzBlog
+{% endblock head %}
+
+{% load crispy_forms_tags %}
+
+{% block body %}
+<div class="container py-4" style="background-color: bisque; max-width: 50 rem">
+    <h3 class="px-5 pt-2">Login to your Account!</h3>
+
+    <div class="px-5 pt-4">
+        {% crispy form %}
+    </div>
+</div>
+{% endblock body %}
