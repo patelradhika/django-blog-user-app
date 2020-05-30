@@ -1,13 +1,15 @@
-from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from PIL import Image
 
-from .forms import UserForm, LoginForm
-from .models import BlogPost
+from .forms import UserForm, LoginForm, AccountForm
+from .models import BlogPost, UserImage
 
 
 # Create your views here.
@@ -59,7 +61,9 @@ def register(request):
 
             else:
                 new_user = User.objects.create_user(username, email, password)
-                return redirect('/')
+                UserImage.objects.create(user=new_user)
+                messages.success(request, "Registration successful. Please login.")
+                return redirect('login')
 
     else:
         form = UserForm()
@@ -88,7 +92,7 @@ def cust_login(request):
 
                 else:
                     login(request, user)
-                    return redirect('/')
+                    return redirect('home')
     
     else:
         form = LoginForm()
@@ -99,4 +103,92 @@ def cust_login(request):
 
 def cust_logout(request):
     logout(request)
-    return redirect('/')
+    return redirect('home')
+
+
+@login_required
+def useraccount(request):
+    if request.method == 'POST':
+        form = AccountForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            user = request.user
+            email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            check = form.cleaned_data['check_pass']
+            pic = form.cleaned_data['image']
+
+            if email:
+                if email == user.email:
+                    form.errors['email'] = ['Email ID is already this.']
+
+                elif User.objects.filter(email=email):
+                    form.errors['email'] = ["Email ID already registered with us."]
+
+                else:
+                    user.email = email
+                    user.save(update_fields=['email'])
+                    messages.success(request, 'Email ID updated successfully.')
+                    return redirect('useraccount')
+
+            if username:
+                if username == user.username:
+                    form.errors['username'] = ["Username is already this."]
+
+                elif User.objects.filter(username=username):
+                    form.errors['username'] = ["A user with this username already exists."]
+
+                else:
+                    user.username = username
+                    user.save(update_fields=['username'])
+                    messages.success(request, "Username updated successfully.")
+                    return redirect('useraccount')
+
+            if password:
+                if user.check_password(password):
+                    form = AccountForm()
+                    form.errors['password'] = ["New password cannot be same as current password."]
+
+                elif not check:
+                    form = AccountForm()
+                    form.errors['check_pass'] = ["Please re-enter this as well to update password."]
+
+                elif len(password) < 8                                                          \
+                or not any(char.isdigit() for char in password)                                 \
+                or not any(char.isupper() for char in password)                                 \
+                or not any(char.islower() for char in password)                                 \
+                or not any(not char.isalnum() for char in password)                             \
+                or not any(char in ALLOWED_SPECIAL_CHAR for char in password):
+                    print("In here")
+                    form = AccountForm()
+                    form.errors['password'] = ["Password does not match criteria."]
+
+                elif check:
+                    if password != check:
+                        form = AccountForm()
+                        form.errors['check_pass'] = ["Passwords must match."]
+
+                    else:
+                        user.set_password(password)
+                        user.save(update_fields=['password'])
+                        messages.success(request, "Password updated successfully. Please re-login with new password.")
+                        return redirect('login')
+
+            if pic:
+                user = UserImage.objects.get(user=request.user)
+                user.image = pic
+                user.save(update_fields=['image'])
+
+                size = (200, 200)
+                pic = Image.open(user.image)
+                pic.thumbnail(size)
+                pic.save(user.image.path)
+
+                return redirect('useraccount')
+
+    else:
+        form = AccountForm()
+
+    frontend = {'form': form}
+    return render(request, 'blog/account.html', frontend)

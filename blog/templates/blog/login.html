@@ -4,14 +4,40 @@
 Register | RadzBlog
 {% endblock head %}
 
-{% load crispy_forms_tags %}
+{% load crispy_forms_field %}
 
 {% block body %}
 <div class="container py-4" style="background-color: bisque; max-width: 50 rem">
     <h3 class="px-5 pt-2">Login to your Account!</h3>
 
-    <div class="px-5 pt-4">
-        {% crispy form %}
-    </div>
+    <form class="px-5 pt-4" action="" method="POST">
+        {% csrf_token %}
+        <div class="row px-5 py-2">
+            <div class="col-3 mt-2">{{form.username.label}}</div>
+            {% crispy_field form.username 'class' 'form-control col-7' %}
+        </div>
+        {% for error in form.errors.username %}
+        <div class="row">
+            <div class="col-3"></div>
+            <h6 style="color: red; font-size: 0.8rem; margin-left: 1.5rem;">{{error}}</h6>
+        </div>
+        {% endfor %}
+
+        <div class="row px-5 py-2">
+            <div class="col-3 mt-2">{{form.password.label}}</div>
+            {% crispy_field form.password 'class' 'form-control col-7' %}
+        </div>
+        {% for error in form.errors.password %}
+        <div class="row">
+            <div class="col-3"></div>
+            <h6 style="color: red; font-size: 0.8rem; margin-left: 1.5rem;">{{error}}</h6>
+        </div>
+        {% endfor %}
+
+        <div class="row px-5 py-2">
+            <div class="col-3"></div>
+            <button type="submit" class="btn btn-primary mt-2">Log In</button>
+        </div>
+    </form>
 </div>
 {% endblock body %}

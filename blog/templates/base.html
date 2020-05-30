@@ -1,6 +1,4 @@
 <!-- DOCTYPE HTML -->
-{% load static %}
-
 <html lang="en">
 
 <head>
@@ -55,7 +53,7 @@
                 <a class="nav-link text-white" href="">Publish Blog</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="">Account</a>
+                <a class="nav-link text-white" href="{% url 'useraccount' %}">Account</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-white" href="{% url 'logout' %}">Log Out</a>
