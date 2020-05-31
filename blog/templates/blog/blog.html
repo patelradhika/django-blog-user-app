@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block head %}
+Blog | RadzBlog
+{% endblock head %}
+
+{% block body %}
+<div class="container py-4" style="background-color: bisque; max-width: 50rem;">
+    <h3 class="pl-3 pt-2">{{blog.title}}</h3>
+
+    <p class="pl-3">
+        <em>Written By: </em><a
+            href="{% url 'authorpage' blog.author %}">{{blog.author}}</a>
+        <br>
+        <em>Posted On: </em>{{blog.posted_on}}
+    </p>
+
+    <p class="pl-3 mt-4">{{blog.content}}</p>
+
+    {% if user.is_authenticated and user == blog.author %}
+    <div class="row ml-3">
+        <a class="col-2 my-2 btn btn-primary" href="{% url 'editblog' blog.id 'blogpage' %}">Edit</a>
+
+        <button class="col-2 my-2 mx-4 btn btn-danger" data-toggle="modal"
+            data-target="#delpost-modal-{{blog.id}}">Delete</button>
+    </div>
+
+    {% include 'blog/delpost-modal.html' %}
+    {% endif %}
+</div>
+{% endblock body %}

@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 
 {% block head %}
-Home | RadzBlog
+Publish Blog | RadzBlog
 {% endblock head %}
 
 {% block body %}
+{% if page %}
 <div class="container mt-4 text-center">
     {% if page.has_previous %}
     <a class="btn btn-sm btn-outline-info text-white"
@@ -27,15 +28,24 @@ Home | RadzBlog
 {% for blog in page.object_list %}
 <div class="container mt-5 py-4" style="background-color: bisque; max-width: 50rem;">
     <h3 class="pl-3">{{blog.title}}</h3>
-    <em class="pl-3">Written By: </em><a
-            href="{% url 'authorpage' blog.author %}">{{blog.author}}</a>
-    <br>
-    <em class="pl-3">Posted On: </em>{{blog.posted_on}}
     
-    <div class="px-3 mt-3">
+    <div class="px-3 mt-4">
         {{blog.content}}
-        <a class="float-right" href="{% url 'blogpage' blog.id %}">Read More...</a>
     </div>
+
+    <form class="px-3 pt-4" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="blogid" value="{{blog.id}}" />
+        <a class="col-2 btn btn-primary" href="{% url 'editblog' blog.id 'publishblog' %}">Edit</a>
+        <button type="submit" class="col-2 btn btn-success ml-3">Publish</button>
+        <button type="button" class="col-2 btn btn-danger ml-3" data-toggle="modal" data-target="#delpost-modal-{{blog.id}}">Delete</button>
+    </form>
 </div>
+
+{% include 'blog/delpost-modal.html' %}
 {% endfor %}
+
+{% else %}
+<p class="text-center text-white">No blogs are pending to be published. <a href="{% url 'createblog' %}">Create New Blog</a> to publish.</p>
+{% endif %}
 {% endblock body %}

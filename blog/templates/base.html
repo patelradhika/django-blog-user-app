@@ -47,10 +47,10 @@
             </li>
             {% else %}
             <li class="nav-item">
-                <a class="nav-link text-white" href="">Create Blog</a>
+                <a class="nav-link text-white" href="{% url 'createblog' %}">Create Blog</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="">Publish Blog</a>
+                <a class="nav-link text-white" href="{% url 'publishblog' %}">Publish Blog</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-white" href="{% url 'useraccount' %}">Account</a>

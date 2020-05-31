@@ -16,6 +16,7 @@ class BlogPost(models.Model):
     content = models.TextField()
     written_on = models.DateTimeField(default=timezone.now)
     posted_on = models.DateTimeField(blank=True, null=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title

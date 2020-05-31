@@ -4,7 +4,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
-from .models import UserImage
+from .models import UserImage, BlogPost
 
 class UserForm(forms.ModelForm):
     email = forms.EmailField(label="Email ID")
@@ -32,3 +32,9 @@ class AccountForm(forms.ModelForm):
     class Meta:
         model = UserImage
         fields = ['image',]
+
+
+class BlogForm(forms.ModelForm):
+    class Meta:
+        model = BlogPost
+        fields = ['title', 'content',]

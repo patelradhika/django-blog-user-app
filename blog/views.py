@@ -4,11 +4,11 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from PIL import Image
 
-from .forms import UserForm, LoginForm, AccountForm
+from .forms import UserForm, LoginForm, AccountForm, BlogForm
 from .models import BlogPost, UserImage
 
 
@@ -192,3 +192,116 @@ def useraccount(request):
 
     frontend = {'form': form}
     return render(request, 'blog/account.html', frontend)
+
+
+@login_required
+def createblog(request):
+    if request.method == 'POST':
+        form = BlogForm(request.POST)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+
+            messages.success(request, "Your new blog is created successfully. It is yet to be published.")
+            return redirect('home')
+
+    else:
+        form = BlogForm()
+
+    frontend = {'form': form}
+    return render(request, 'blog/create.html', frontend)
+
+
+@login_required
+def postblog(request):
+    if request.method == 'POST':
+        form = BlogForm(request.POST)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.posted_on = timezone.now()
+            post.save()
+
+            messages.success(request, "Your new blog is posted successfully.")
+        
+        else:
+            return redirect('createblog', {'form': form})
+
+    return redirect('home')
+
+
+@login_required
+def publishblog(request):
+    if request.method == 'POST':
+        post = get_object_or_404(BlogPost, pk=request.POST.get('blogid'))
+        post.posted_on = timezone.now()
+        post.save()
+
+        messages.success(request, "Your blog is posted successfully.")
+
+    blogs = BlogPost.objects.filter(posted_on=None, author=request.user)
+    paginator = Paginator(blogs, 2)
+
+    page_num = request.GET.get('page')
+    page = paginator.get_page(page_num)
+
+    if not page_num or int(page_num) <= paginator.num_pages:
+        frontend = {'blogs': blogs, 'page': page}
+        return render(request, 'blog/publish.html', frontend)
+    
+    else:
+        return render(request, 'error/404.html')
+
+
+@login_required
+def editblog(request, blogid, returnpage):
+    post = get_object_or_404(BlogPost, pk=blogid)
+
+    if request.method == 'POST':
+        form = BlogForm(request.POST, instance=post)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+
+            messages.success(request, "Blog edited successfully.")
+
+        if returnpage == "publishblog":
+            return redirect(returnpage)
+
+        else:
+            return redirect(returnpage, blogid)
+
+    else:
+        form = BlogForm(instance=post)
+
+        frontend = {'form': form, 'returnpage': returnpage, 'blogid': blogid}
+        return render(request, 'blog/edit.html', frontend)
+
+
+@login_required
+def deleteblog(request, blogid):
+    post = get_object_or_404(BlogPost, pk=blogid)
+    post.delete()
+
+    messages.success(request, "Blog deleted sucessfully.")
+    return redirect('home')
+
+
+def authorpage(request, author):
+    author = get_object_or_404(User, username=author)
+    posts = BlogPost.objects.filter(author=author, posted_on__lte=timezone.now()).order_by('-posted_on')
+
+    frontend = {'author': author, 'posts': posts}
+    return render(request, 'blog/authorpage.html', frontend)
+
+
+def blogpage(request, blogid):
+    blog = get_object_or_404(BlogPost, pk=blogid)
+
+    frontend = {'blog': blog}
+    return render(request, 'blog/blog.html', frontend)

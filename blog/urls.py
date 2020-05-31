@@ -10,4 +10,11 @@ urlpatterns = [
     path('login', views.cust_login, name='login'),
     path('logout', views.cust_logout, name='logout'),
     path('account', views.useraccount, name='useraccount'),
+    path('blog/create', views.createblog, name='createblog'),
+    path('blog/post', views.postblog, name='postblog'),
+    path('blog/publish', views.publishblog, name='publishblog'),
+    path('blog/edit/<int:blogid><returnpage>', views.editblog, name='editblog'),
+    path('blog/delete/<int:blogid>', views.deleteblog, name='deleteblog'),
+    path('authorpage/<author>', views.authorpage, name='authorpage'),
+    path('blogpage/<int:blogid>', views.blogpage, name='blogpage'),
 ]
