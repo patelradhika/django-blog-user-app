@@ -8,8 +8,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from PIL import Image
 
-from .forms import UserForm, LoginForm, AccountForm, BlogForm
-from .models import BlogPost, UserImage
+from .forms import UserForm, LoginForm, AccountForm, BlogForm, CommentForm
+from .models import BlogPost, UserImage, Comments
 
 
 # Create your views here.
@@ -302,6 +302,43 @@ def authorpage(request, author):
 
 def blogpage(request, blogid):
     blog = get_object_or_404(BlogPost, pk=blogid)
+    form = CommentForm()
 
-    frontend = {'blog': blog}
+    frontend = {'blog': blog, 'form': form}
     return render(request, 'blog/blog.html', frontend)
+
+
+def createcomm(request, blogid):
+    post = get_object_or_404(BlogPost, pk=blogid)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.post = post
+            comment.save()
+
+            messages.success(request, "Comment sent for approval. Once approved, it will appear in comments section below.")
+
+        return redirect('blogpage', blogid)
+
+
+def editcomm(request, comid):
+    if request.method == 'POST':
+        comment = get_object_or_404(Comments, pk=comid)
+        comment.comment = request.POST.get('edt-comment')
+        comment.save()
+
+        messages.success(request, "Comment edited successfully.")
+        return redirect('blogpage', comment.post.id)
+
+
+def deletecomm(request, comid):
+    if request.method == 'POST':
+        comment = get_object_or_404(Comments, pk=comid)
+        comment.delete()
+
+        messages.success(request, "Comment deleted successfully.")
+        return redirect('blogpage', comment.post.id)

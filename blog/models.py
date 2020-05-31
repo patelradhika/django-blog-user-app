@@ -18,5 +18,25 @@ class BlogPost(models.Model):
     posted_on = models.DateTimeField(blank=True, null=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    def approved_comments(self):
+        return self.comments.filter(approved=True)
+
+    def unapproved_comments(self):
+        return self.comments.filter(approved=False)
+
     def __str__(self):
         return self.title
+
+
+class Comments(models.Model):
+    post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.TextField()
+    approved = models.BooleanField(default=False)
+
+    def approve(self):
+        self.approved = True
+        self.save()
+
+    def __str__(self):
+        return self.comment

@@ -4,7 +4,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
-from .models import UserImage, BlogPost
+from .models import UserImage, BlogPost, Comments
 
 class UserForm(forms.ModelForm):
     email = forms.EmailField(label="Email ID")
@@ -38,3 +38,11 @@ class BlogForm(forms.ModelForm):
     class Meta:
         model = BlogPost
         fields = ['title', 'content',]
+
+
+class CommentForm(forms.ModelForm):
+    comment = forms.CharField(label="Your thoughts (Comments)", widget=forms.Textarea(attrs={'class': 'form-control col-8', 'rows': '3'}))
+
+    class Meta:
+        model = Comments
+        fields = ['comment',]

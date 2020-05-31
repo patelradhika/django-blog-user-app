@@ -17,4 +17,7 @@ urlpatterns = [
     path('blog/delete/<int:blogid>', views.deleteblog, name='deleteblog'),
     path('authorpage/<author>', views.authorpage, name='authorpage'),
     path('blogpage/<int:blogid>', views.blogpage, name='blogpage'),
+    path('comment/create/<int:blogid>', views.createcomm, name='createcomm'),
+    path('comment/edit/<int:comid>', views.editcomm, name='editcomm'),
+    path('comment/delete/<int:comid>', views.deletecomm, name='deletecomm'),
 ]

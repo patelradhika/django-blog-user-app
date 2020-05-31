@@ -28,4 +28,73 @@ Blog | RadzBlog
     {% include 'blog/delpost-modal.html' %}
     {% endif %}
 </div>
+
+<div class="container py-5" style="max-width: 50rem;">
+    <h5 class="px-3 text-white">Comments Section:</h5>
+    {% for comment in blog.approved_comments %}
+    
+    <div class="row px-3 mt-4">
+        <img class="rounded ml-3" src="{{comment.author.userimage.image.url}}" style="width: 30px; height: 30px;">
+        <p class="pl-2 text-white">{{comment.author.username}}</p>
+    </div>
+
+    <div class="row px-3">
+        <div class="col-10 px-5 ml-1">
+            <p class="text-white"><em>{{comment.comment}}</em></p>
+        </div>
+
+        {% if user.is_authenticated and user == comment.author %}
+        <div class="col">
+            <a href="" style="color: red;" data-toggle="modal" data-target="#delcom-modal-{{comment.id}}"><i class="ml-4 fas fa-trash-alt"></i></a>
+        </div>
+        
+        {% include 'blog/delcom-modal.html' %}
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{% if user.is_authenticated %}
+<div class="container py-5" style="max-width: 50rem;">
+    <h5 class="px-3 text-white">Your Unapproved Comments:</h5>
+    {% for comment in blog.unapproved_comments %}
+    {% if not comment.approved and user == comment.author %}
+    <div class="row px-3 mt-4">
+        <img class="rounded ml-3" src="{{comment.author.userimage.image.url}}" style="width: 30px; height: 30px;">
+        <p class="pl-2 text-white">{{comment.author.username}}</p>
+    </div>
+
+    <div class="row px-3">
+        <div class="col-10 px-5 ml-1">
+            <p class="text-white"><em>{{comment.comment}}</em></p>
+        </div>
+
+        {% if user.is_authenticated and user == comment.author %}
+        <div class="col">
+            <a href="" style="color: white;" data-toggle="modal" data-target="#edtcom-modal-{{comment.id}}"><i class="ml-4 fas fa-pen-alt"></i></a>
+            <a href="" style="color: red;" data-toggle="modal" data-target="#delcom-modal-{{comment.id}}"><i class="ml-4 fas fa-trash-alt"></i></a>
+        </div>
+
+        {% include 'blog/edtcom-modal.html' %}
+        {% include 'blog/delcom-modal.html' %}
+        {% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<form class="container py-4" method="POST"
+    style="background-color: bisque; max-width: 50rem;">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-3 pl-5 pt-4">{{form.comment.label}}</div>
+        {{form.comment}}
+    </div>
+
+    <div class="row pt-4">
+        <div class="col-3"></div>
+        <button type="submit" class="col-3 btn btn-primary" formaction="{% url 'createcomm' blog.id %}">Send for Approval</button>
+    </div>
+</form>
+{% endif %}
 {% endblock body %}
