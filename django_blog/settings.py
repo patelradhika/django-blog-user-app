@@ -23,11 +23,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'npb@mq5-n*vozj=(=dr92-*!38$z2g+=(lgks-x7p&-5+mkdnf'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 LOGIN_REDIRECT_URL = 'home'
 

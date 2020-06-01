@@ -1,9 +1,10 @@
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from PIL import Image
@@ -16,23 +17,37 @@ from .models import BlogPost, UserImage, Comments
 ALLOWED_SPECIAL_CHAR = ['_', '@', '$', '#']
 
 
+def handler403(request, exception):
+    return render(request, 'errors/403.html', {})
+
+
+def handler404(request, exception):
+    return render(request, 'errors/404.html', {})
+
+
 def home(request):
-    blogs = BlogPost.objects.filter(posted_on__lte=timezone.now()).order_by('-posted_on')
-    paginator = Paginator(blogs, 2)
+    if not request.user.is_superuser:
+        blogs = BlogPost.objects.filter(posted_on__lte=timezone.now()).order_by('-posted_on')
+        paginator = Paginator(blogs, 2)
 
-    page_num = request.GET.get('page')
-    page = paginator.get_page(page_num)
+        page_num = request.GET.get('page')
+        page = paginator.get_page(page_num)
 
-    if not page_num or int(page_num) <= paginator.num_pages:
-        frontend = {'blogs': blogs, 'page': page}
-        return render(request, 'blog/home.html', frontend)
-    
+        if not page_num or int(page_num) <= paginator.num_pages:
+            frontend = {'blogs': blogs, 'page': page}
+            return render(request, 'blog/home.html', frontend)
+        
+        else:
+            raise Http404
     else:
-        return render(request, 'error/404.html')
+        raise PermissionDenied()
 
 
 def about(request):
-    return render(request, 'blog/about.html')
+    if not request.user.is_superuser:
+        return render(request, 'blog/about.html')
+    else:
+        raise PermissionDenied()
 
 
 def register(request):
@@ -92,11 +107,15 @@ def cust_login(request):
 
                 else:
                     login(request, user)
+                    messages.success(request, "Login successful.")
                     
-                    if user.is_superuser:
-                        return redirect('approvallist')
+                    if request.GET.get('next'):
+                        return redirect(request.GET.get('next'))
                     else:
-                        return redirect('home')
+                        if user.is_superuser:
+                            return redirect('approvallist')
+                        else:
+                            return redirect('home')
     
     else:
         form = LoginForm()
@@ -107,6 +126,7 @@ def cust_login(request):
 
 def cust_logout(request):
     logout(request)
+    messages.success(request, "Logged out successfully.")
     return redirect('home')
 
 
@@ -212,7 +232,10 @@ def createblog(request):
             return redirect('home')
 
     else:
-        form = BlogForm()
+        if not request.user.is_superuser:
+            form = BlogForm()
+        else:
+            raise PermissionDenied()
 
     frontend = {'form': form}
     return render(request, 'blog/create.html', frontend)
@@ -229,12 +252,15 @@ def postblog(request):
             post.posted_on = timezone.now()
             post.save()
 
-            messages.success(request, "Your new blog is posted successfully.")
+            messages.success(request, "Your new blog is published successfully.")
         
         else:
             return redirect('createblog', {'form': form})
 
-    return redirect('home')
+        return redirect('home')
+
+    else:
+        raise PermissionDenied()
 
 
 @login_required
@@ -244,20 +270,23 @@ def publishblog(request):
         post.posted_on = timezone.now()
         post.save()
 
-        messages.success(request, "Your blog is posted successfully.")
+        messages.success(request, "Your blog is published successfully.")
 
-    blogs = BlogPost.objects.filter(posted_on=None, author=request.user)
-    paginator = Paginator(blogs, 2)
+    if not request.user.is_superuser:
+        blogs = BlogPost.objects.filter(posted_on=None, author=request.user)
+        paginator = Paginator(blogs, 2)
 
-    page_num = request.GET.get('page')
-    page = paginator.get_page(page_num)
+        page_num = request.GET.get('page')
+        page = paginator.get_page(page_num)
 
-    if not page_num or int(page_num) <= paginator.num_pages:
-        frontend = {'blogs': blogs, 'page': page}
-        return render(request, 'blog/publish.html', frontend)
-    
+        if not page_num or int(page_num) <= paginator.num_pages:
+            frontend = {'blogs': blogs, 'page': page}
+            return render(request, 'blog/publish.html', frontend)
+        
+        else:
+            raise Http404
     else:
-        return render(request, 'error/404.html')
+        raise PermissionDenied()
 
 
 @login_required
@@ -281,42 +310,55 @@ def editblog(request, blogid, returnpage):
             return redirect(returnpage, blogid)
 
     else:
-        form = BlogForm(instance=post)
+        if request.user == post.author:
+            form = BlogForm(instance=post)
 
-        frontend = {'form': form, 'returnpage': returnpage, 'blogid': blogid}
-        return render(request, 'blog/edit.html', frontend)
+            frontend = {'form': form, 'returnpage': returnpage, 'blogid': blogid}
+            return render(request, 'blog/edit.html', frontend)
+
+        else:
+            raise PermissionDenied()
 
 
 @login_required
 def deleteblog(request, blogid):
-    post = get_object_or_404(BlogPost, pk=blogid)
-    post.delete()
-
-    messages.success(request, "Blog deleted sucessfully.")
-    return redirect('home')
+    if request.method == 'POST':
+        post = get_object_or_404(BlogPost, pk=blogid)
+        post.delete()
+        messages.success(request, "Blog deleted sucessfully.")
+        return redirect('home')
+    else:
+        raise PermissionDenied()
 
 
 def authorpage(request, author):
-    author = get_object_or_404(User, username=author)
-    posts = BlogPost.objects.filter(author=author, posted_on__lte=timezone.now()).order_by('-posted_on')
+    if not request.user.is_superuser:
+        author = get_object_or_404(User, username=author)
+        posts = BlogPost.objects.filter(author=author, posted_on__lte=timezone.now()).order_by('-posted_on')
 
-    frontend = {'author': author, 'posts': posts}
-    return render(request, 'blog/authorpage.html', frontend)
+        frontend = {'author': author, 'posts': posts}
+        return render(request, 'blog/authorpage.html', frontend)
+
+    else:
+        raise PermissionDenied()
 
 
 def blogpage(request, blogid):
-    blog = get_object_or_404(BlogPost, pk=blogid)
-    form = CommentForm()
+    if not request.user.is_superuser:
+        blog = get_object_or_404(BlogPost, pk=blogid)
+        form = CommentForm()
 
-    frontend = {'blog': blog, 'form': form}
-    return render(request, 'blog/blog.html', frontend)
+        frontend = {'blog': blog, 'form': form}
+        return render(request, 'blog/blog.html', frontend)
+
+    else:
+        raise PermissionDenied()
 
 
 @login_required
 def createcomm(request, blogid):
-    post = get_object_or_404(BlogPost, pk=blogid)
-
     if request.method == 'POST':
+        post = get_object_or_404(BlogPost, pk=blogid)
         form = CommentForm(request.POST)
 
         if form.is_valid():
@@ -328,6 +370,9 @@ def createcomm(request, blogid):
             messages.success(request, "Comment sent for approval. Once approved, it will appear in comments section below.")
 
         return redirect('blogpage', blogid)
+    
+    else:
+        raise PermissionDenied()
 
 
 @login_required
@@ -339,53 +384,73 @@ def editcomm(request, comid):
 
         messages.success(request, "Comment edited successfully.")
         return redirect('blogpage', comment.post.id)
+    else:
+        raise PermissionDenied()
 
 
 @login_required
 def deletecomm(request, comid):
     if request.method == 'POST':
         comment = get_object_or_404(Comments, pk=comid)
-        comment.delete()
+        if comment.author == request.user or request.user.is_superuser:
+            comment.delete()
 
-        messages.success(request, "Comment deleted successfully.")
-        return redirect('blogpage', comment.post.id)
+            messages.success(request, "Comment deleted successfully.")
+            return redirect('blogpage', comment.post.id)
+
+        else:
+            raise PermissionDenied()
+    else:
+        raise PermissionDenied()
 
 
 @login_required
 def approvallist(request):
-    allblogs = BlogPost.objects.filter(posted_on__lte=timezone.now())
-    blogs = []
-    for blog in allblogs:
-        if blog.unapproved_comments():
-            blogs.append(blog)
+    if request.user.is_superuser:
+        allblogs = BlogPost.objects.filter(posted_on__lte=timezone.now())
+        blogs = []
+        for blog in allblogs:
+            if blog.unapproved_comments():
+                blogs.append(blog)
 
-    paginator = Paginator(blogs, 2)
-    page_num = request.GET.get('page')
-    page = paginator.get_page(page_num)
+        paginator = Paginator(blogs, 2)
+        page_num = request.GET.get('page')
+        page = paginator.get_page(page_num)
 
-    if not page_num or int(page_num) <= paginator.num_pages:
-        frontend = {'blogs': blogs, 'page': page}
-        return render(request, 'blog/approvallist.html', frontend)
-    
+        if not page_num or int(page_num) <= paginator.num_pages:
+            frontend = {'blogs': blogs, 'page': page}
+            return render(request, 'blog/approvallist.html', frontend)
+        
+        else:
+            raise Http404
     else:
-        return render(request, 'error/404.html')
+        raise PermissionDenied()
 
 
 @login_required
 def approvecomm(request, comid):
-    comment = get_object_or_404(Comments, pk=comid)
-    comment.approve()
+    if request.method == 'POST' and request.user.is_superuser:
+        comment = get_object_or_404(Comments, pk=comid)
+        comment.approve()
+        messages.success(request, "Comment approved successfully.")
 
-    if comment.post.unapproved_comments():
-        return redirect('blogpage', comment.post.id)
+        if comment.post.unapproved_comments():
+            return redirect('blogpage', comment.post.id)
+        else:
+            return redirect('approvallist')
+
     else:
-        return redirect('approvallist')
+        raise PermissionDenied()
 
 
 @login_required
 def deleteaccount(request, userid):
-    user = get_object_or_404(User, pk=userid)
-    user.delete()
-    
-    messages.success(request, "Account deleted successfully.")
-    return redirect('logout')
+    if request.method == 'POST':
+        user = get_object_or_404(User, pk=userid)
+        user.delete()
+        
+        messages.success(request, "Account deleted successfully.")
+        return redirect('logout')
+
+    else:
+        raise PermissionDenied()

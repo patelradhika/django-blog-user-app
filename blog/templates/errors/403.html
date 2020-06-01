@@ -167,7 +167,13 @@
                 <div class="bottom"></div>
             </div>3</h1>
         <p>Access denied</p>
+        
+        {% if user.is_superuser %}
+        <p class="goback"><a id="errorLink" href="{% url 'approvallist' %}">Go Back</a></p>
+        {% else %}
         <p class="goback"><a id="errorLink" href="{% url 'home' %}">Go Back</a></p>
+        {% endif %}
+            
     </div>
 
     <script>

@@ -67,11 +67,12 @@ Blog | RadzBlog
         </div>
 
         <div class="col">
-            <a href="{% url 'approvecomm' comment.id %}" style="color: green;"><i class="fas fa-check-double"></i></a>
+            <a href="" style="color: green;" data-toggle="modal" data-target="#aprcom-modal-{{comment.id}}"><i class="fas fa-check-double"></i></a>
             <a href="" style="color: red;" data-toggle="modal" data-target="#delcom-modal-{{comment.id}}"><i class="ml-4 fas fa-trash-alt"></i></a>
         </div>
     </div>
 
+    {% include 'blog/aprcom-modal.html' %}
     {% include 'blog/delcom-modal.html' %}
     {% endfor %}
     {% endif %}

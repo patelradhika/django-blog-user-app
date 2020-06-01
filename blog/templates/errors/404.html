@@ -297,7 +297,13 @@
         </svg>
 
         <p id="errorText">O-o-oh! Something broke.</p>
+        
+        {% if user.is_superuser %}
+        <a id="errorLink" href="{% url 'approvallist' %}">Go Back</a>
+        {% else %}
         <a id="errorLink" href="{% url 'home' %}">Go Back</a>
+        {% endif %}
+            
     </main>
     </main>
 </body>
