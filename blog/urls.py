@@ -20,4 +20,6 @@ urlpatterns = [
     path('comment/create/<int:blogid>', views.createcomm, name='createcomm'),
     path('comment/edit/<int:comid>', views.editcomm, name='editcomm'),
     path('comment/delete/<int:comid>', views.deletecomm, name='deletecomm'),
+    path('approval-list', views.approvallist, name='approvallist'),
+    path('comment/approve/<int:comid>', views.approvecomm, name='approvecomm'),
 ]

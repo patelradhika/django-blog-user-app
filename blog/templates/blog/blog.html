@@ -9,10 +9,10 @@ Blog | RadzBlog
     <h3 class="pl-3 pt-2">{{blog.title}}</h3>
 
     <p class="pl-3">
-        <em>Written By: </em><a
+        <i class="font-italic">Written By: </i><a
             href="{% url 'authorpage' blog.author %}">{{blog.author}}</a>
         <br>
-        <em>Posted On: </em>{{blog.posted_on}}
+        <i class="font-italic">Posted On: </i>{{blog.posted_on}}
     </p>
 
     <p class="pl-3 mt-4">{{blog.content}}</p>
@@ -52,9 +52,33 @@ Blog | RadzBlog
         {% endif %}
     </div>
     {% endfor %}
+    
+    {% if user.is_superuser %}
+    {% for comment in blog.unapproved_comments %}
+    
+    <div class="row px-3 mt-4">
+        <img class="rounded ml-3" src="{{comment.author.userimage.image.url}}" style="width: 30px; height: 30px;">
+        <p class="pl-2 text-white">{{comment.author.username}}</p>
+    </div>
+
+    <div class="row px-3">
+        <div class="col-10 px-5 ml-1">
+            <p class="text-white"><em>{{comment.comment}}</em></p>
+        </div>
+
+        <div class="col">
+            <a href="{% url 'approvecomm' comment.id %}" style="color: green;"><i class="fas fa-check-double"></i></a>
+            <a href="" style="color: red;" data-toggle="modal" data-target="#delcom-modal-{{comment.id}}"><i class="ml-4 fas fa-trash-alt"></i></a>
+        </div>
+    </div>
+
+    {% include 'blog/delcom-modal.html' %}
+    {% endfor %}
+    {% endif %}
+        
 </div>
 
-{% if user.is_authenticated %}
+{% if user.is_authenticated and not user.is_superuser %}
 <div class="container py-5" style="max-width: 50rem;">
     <h5 class="px-3 text-white">Your Unapproved Comments:</h5>
     {% for comment in blog.unapproved_comments %}

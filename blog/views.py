@@ -92,7 +92,11 @@ def cust_login(request):
 
                 else:
                     login(request, user)
-                    return redirect('home')
+                    
+                    if user.is_superuser:
+                        return redirect('approvallist')
+                    else:
+                        return redirect('home')
     
     else:
         form = LoginForm()
@@ -308,6 +312,7 @@ def blogpage(request, blogid):
     return render(request, 'blog/blog.html', frontend)
 
 
+@login_required
 def createcomm(request, blogid):
     post = get_object_or_404(BlogPost, pk=blogid)
 
@@ -325,6 +330,7 @@ def createcomm(request, blogid):
         return redirect('blogpage', blogid)
 
 
+@login_required
 def editcomm(request, comid):
     if request.method == 'POST':
         comment = get_object_or_404(Comments, pk=comid)
@@ -335,6 +341,7 @@ def editcomm(request, comid):
         return redirect('blogpage', comment.post.id)
 
 
+@login_required
 def deletecomm(request, comid):
     if request.method == 'POST':
         comment = get_object_or_404(Comments, pk=comid)
@@ -342,3 +349,34 @@ def deletecomm(request, comid):
 
         messages.success(request, "Comment deleted successfully.")
         return redirect('blogpage', comment.post.id)
+
+
+@login_required
+def approvallist(request):
+    allblogs = BlogPost.objects.filter(posted_on__lte=timezone.now())
+    blogs = []
+    for blog in allblogs:
+        if blog.unapproved_comments():
+            blogs.append(blog)
+
+    paginator = Paginator(blogs, 2)
+    page_num = request.GET.get('page')
+    page = paginator.get_page(page_num)
+
+    if not page_num or int(page_num) <= paginator.num_pages:
+        frontend = {'blogs': blogs, 'page': page}
+        return render(request, 'blog/approvallist.html', frontend)
+    
+    else:
+        return render(request, 'error/404.html')
+
+
+@login_required
+def approvecomm(request, comid):
+    comment = get_object_or_404(Comments, pk=comid)
+    comment.approve()
+
+    if comment.post.unapproved_comments():
+        return redirect('blogpage', comment.post.id)
+    else:
+        return redirect('approvallist')
