@@ -22,4 +22,5 @@ urlpatterns = [
     path('comment/delete/<int:comid>', views.deletecomm, name='deletecomm'),
     path('approval-list', views.approvallist, name='approvallist'),
     path('comment/approve/<int:comid>', views.approvecomm, name='approvecomm'),
+    path('account/delete/<int:userid>', views.deleteaccount, name='deleteaccount'),
 ]

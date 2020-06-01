@@ -73,5 +73,13 @@ Account | RadzBlog
             <button type="submit" class="col-2 btn btn-primary">Update</button>
         </div>
     </form>
+
+    <hr>
+    <div class="row px-5 pt-2">
+        <div class="col-3 mt-2">Delete Account</div>
+        <button type="button" class="col-2 btn btn-danger" data-toggle="modal" data-target="#delcact-modal-{{user.id}}">Delete</button>
+    </div>
 </div>
+
+{% include 'blog/delact-modal.html' %}
 {% endblock body %}

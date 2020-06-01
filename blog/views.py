@@ -380,3 +380,12 @@ def approvecomm(request, comid):
         return redirect('blogpage', comment.post.id)
     else:
         return redirect('approvallist')
+
+
+@login_required
+def deleteaccount(request, userid):
+    user = get_object_or_404(User, pk=userid)
+    user.delete()
+    
+    messages.success(request, "Account deleted successfully.")
+    return redirect('logout')
